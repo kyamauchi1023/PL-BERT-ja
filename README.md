@@ -15,11 +15,20 @@ pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --e
 ```
 
 ## Preprocessing
-Please refer to the notebook `preprocess.ipynb` for more details.
+```bash
+python preprocess.py
+```
+```bash
+pgrep python | xargs kill -9
+```
 
 ## Trianing
-Please run each cell in the notebook `train.ipynb`. You will need to change the line
-`config_path = "Configs/config.yml"` in cell 2 if you wish to use a different config file.
+```bash
+python train.py
+```
+```
+tensorboard --logdir logs
+```
 
 ## Finetuning
 Here is an example of how to use it for StyleTTS finetuning. You can use it for other TTS models by replacing the text encoder with the pre-trained PL-BERT.

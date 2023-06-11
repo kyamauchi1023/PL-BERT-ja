@@ -24,6 +24,9 @@ logger.setLevel(logging.DEBUG)
 np.random.seed(1)
 random.seed(1)
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
 class FilePathDataset(torch.utils.data.Dataset):
     def __init__(self, dataset,
                  token_maps="token_maps.pkl",
@@ -156,7 +159,7 @@ def build_dataloader(df,
                      validation=False,
                      batch_size=4,
                      num_workers=1,
-                     device='cpu',
+                     device=torch.device("cpu"),
                      collate_config={},
                      dataset_config={}):
 
@@ -168,6 +171,6 @@ def build_dataloader(df,
                              num_workers=num_workers,
                              drop_last=(not validation),
                              collate_fn=collate_fn,
-                             pin_memory=(device != 'cpu'))
+                             pin_memory=(device != torch.device("cpu")))
 
     return data_loader

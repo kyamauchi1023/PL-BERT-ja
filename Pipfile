@@ -14,10 +14,16 @@ phonemizer = "*"
 sacremoses = "*"
 pebble = "*"
 jupyterlab = "*"
-pyopenjtalk = "*"
 pathlib = "*"
 apache-beam = "*"
 tqdm = "*"
+fugashi = "*"
+ipadic = "*"
+mwparserfromhell = "*"
+install = "*"
+mecab-python3 = "*"
+cython = "*"
+pyopenjtalk = "*"
 
 [dev-packages]
 

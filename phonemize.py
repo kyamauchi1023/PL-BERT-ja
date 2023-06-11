@@ -1,13 +1,13 @@
+import string
+
 import pyopenjtalk
 import unicodedata
 
-from prepare_tg_accent import pp_symbols
 from convert_label import openjtalk2julius
 
 
 def global_phonemize(text: str):
-    fullcontext_labels = pyopenjtalk.extract_fullcontext(text)
-    phonemes = pp_symbols(fullcontext_labels)
+    phonemes = pyopenjtalk.g2p(text).split(' ')
     phonemes = [openjtalk2julius(p) for p in phonemes if p != '']
     return phonemes
 
@@ -15,9 +15,17 @@ def global_phonemize(text: str):
 def phonemize(text, tokenizer):
     text = unicodedata.normalize("NFKC", text)
     words = tokenizer.tokenize(text)
+    input_ids_ = tokenizer.convert_tokens_to_ids(words)
     
-    phonemes = [global_phonemize([word], strip=True)[0] if word not in string.punctuation else word for word in words]
-    input_ids = [tokenizer.encode(word)[0] for word in words]
+    phonemes = []
+    input_ids = []
+    for i in range(len(words)):
+        word = words[i]
+        input_id = input_ids_[i]
+        phoneme = global_phonemize(word.replace('#', ''))
+        if len(phoneme) != 0:
+            phonemes.append(''.join(phoneme))
+            input_ids.append(input_id)
         
     assert len(input_ids) == len(phonemes)
     return {'input_ids' : input_ids, 'phonemes': phonemes}

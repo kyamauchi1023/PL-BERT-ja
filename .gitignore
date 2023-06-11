@@ -160,3 +160,8 @@ cython_debug/
 #.idea/
 
 wiki_phoneme/
+nohup.out
+Checkpoint/
+logs/
+
+token_maps.pkl
