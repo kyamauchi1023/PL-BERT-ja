@@ -24,6 +24,7 @@ install = "*"
 mecab-python3 = "*"
 cython = "*"
 pyopenjtalk = "*"
+tensorboard = "*"
 
 [dev-packages]
 

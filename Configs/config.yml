@@ -1,8 +1,8 @@
 log_dir: "Checkpoint"
 mixed_precision: "fp16"
 data_folder: "/media/yamauchi/2084DFA884DF7EAA/dataset/wikipedia-ja/processed_data"
-batch_size: 192
-save_interval: 5000
+batch_size: 16
+save_interval: 50000
 log_interval: 10
 num_process: 1 # number of GPUs
 num_steps: 1000000
@@ -21,7 +21,7 @@ dataset_params:
     replace_prob: 0.2 # probablity to replace phonemes
     
 model_params:
-    vocab_size: 178
+    vocab_size: 378
     hidden_size: 768
     num_attention_heads: 12
     intermediate_size: 2048

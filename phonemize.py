@@ -5,10 +5,37 @@ import unicodedata
 
 from convert_label import openjtalk2julius
 
+_japanese = ['ky','sp', 'sh', 'ch', 'ts','ty', 'ry', 'ny', 'by', 'hy', 'gy', 'kw', 'gw', 'kj', 'gj', 'my', 'py','dy']
+japanese = ['$', '%', '&', '「', '」', '=', '~', '^', '|', '[', ']', '{', '}', '*', '+', '#', '<', '>']
+_japanese2japanese = {
+    'ky': '$',
+    'sp': '%',
+    'sh': '&',
+    'ch': '「',
+    'ts': '」',
+    'ty': '=',
+    'ry': '~',
+    'ny': '^',
+    'by': '|',
+    'hy': '[',
+    'gy': ']',
+    'kw': '{',
+    'gw': '}',
+    'kj': '*',
+    'gj': '+',
+    'my': '#',
+    'py': '<',
+    'dy': '>',
+}
+
 
 def global_phonemize(text: str):
     phonemes = pyopenjtalk.g2p(text).split(' ')
     phonemes = [openjtalk2julius(p) for p in phonemes if p != '']
+    for i in range(len(phonemes)):
+        phoneme = phonemes[i]
+        if phoneme in _japanese:
+            phonemes[i] = _japanese2japanese[phoneme]
     return phonemes
 
 

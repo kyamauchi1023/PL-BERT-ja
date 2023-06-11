@@ -11,7 +11,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
-from transformers import AdamW
+# from transformers import AdamW
 from transformers import AlbertConfig, AlbertModel
 from transformers import BertJapaneseTokenizer
 import yaml
@@ -40,17 +40,20 @@ def train():
     train_logger = SummaryWriter(log_for_tensorboard)
     
     batch_size = config["batch_size"]
-    train_loader = build_dataloader(dataset, 
-                                    batch_size=batch_size, 
-                                    num_workers=2,
-                                    dataset_config=config['dataset_params'],
-                                    device=device)
+    train_loader = build_dataloader(
+        dataset, 
+        batch_size=batch_size, 
+        dataset_config=config['dataset_params'],
+        num_workers=8,
+        device=device,
+    )
 
     albert_base_configuration = AlbertConfig(**config['model_params'])
     
     bert = AlbertModel(albert_base_configuration).to(device)
-    bert = MultiTaskModel(bert, 
-                          num_vocab=max([m['token'] for m in token_maps.values()]), 
+    num_vocab = max([m['token'] for m in token_maps.values()]) + 1  # 30922 + 1
+    bert = MultiTaskModel(bert,
+                          num_vocab=num_vocab,
                           num_tokens=config['model_params']['vocab_size'],
                           hidden_size=config['model_params']['hidden_size']).to(device)
     
@@ -67,7 +70,7 @@ def train():
         iters = 0
         load = False
     
-    optimizer = AdamW(bert.parameters(), lr=1e-4)
+    optimizer = torch.optim.AdamW(bert.parameters(), lr=1e-4)
     
     accelerator = Accelerator(mixed_precision=config['mixed_precision'], split_batches=True, kwargs_handlers=[ddp_kwargs])
     
@@ -97,10 +100,9 @@ def train():
         curr_steps += 1
         
         words, labels, phonemes, input_lengths, masked_indices = batch
-        words, labels, phonemes = words.to(device), labels.to(device), phonemes.to(device)
-        text_mask = length_to_mask(torch.Tensor(input_lengths)).to(device)
+        text_mask = length_to_mask(torch.Tensor(input_lengths))
         
-        tokens_pred, words_pred = bert(phonemes, attention_mask=(~text_mask).int())
+        tokens_pred, words_pred = bert(phonemes, attention_mask=(~text_mask).int().to(device))
         
         loss_vocab = 0
         for _s2s_pred, _text_input, _text_length, _masked_indices in zip(words_pred, words, input_lengths, masked_indices):
@@ -117,6 +119,7 @@ def train():
                                             _text_input[:_text_length]) 
                 loss_token += loss_tmp
                 sizes += 1
+
         loss_token /= sizes
 
         loss = loss_vocab + loss_token
@@ -129,12 +132,13 @@ def train():
 
         iters = iters + 1
         if (iters+1)%log_interval == 0:
+            total_loss = running_loss / log_interval
             accelerator.print ('Step [%d/%d], Loss: %.5f, Vocab Loss: %.5f, Token Loss: %.5f'
-                    %(iters+1, num_steps, running_loss / log_interval, loss_vocab, loss_token))
-            running_loss = 0
-            train_logger.add_scalar("Total Loss", running_loss / log_interval, iters+1)
+                    %(iters+1, num_steps, total_loss, loss_vocab, loss_token))
+            train_logger.add_scalar("Total Loss", total_loss, iters+1)
             train_logger.add_scalar("Vocab Loss", loss_vocab, iters+1)
             train_logger.add_scalar("Token Loss", loss_token, iters+1)
+            running_loss = 0
             
         if (iters+1)%save_interval == 0:
             accelerator.print('Saving..')

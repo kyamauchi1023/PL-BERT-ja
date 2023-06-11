@@ -24,7 +24,7 @@ pgrep python | xargs kill -9
 
 ## Trianing
 ```bash
-python train.py
+CUDA_LAUNCH_BLOCKING=1 python train.py
 ```
 ```
 tensorboard --logdir logs

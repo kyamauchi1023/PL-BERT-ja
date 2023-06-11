@@ -48,12 +48,14 @@ class Collater(object):
         # batch[0] = wave, mel, text, f0, speakerid
         batch_size = len(batch)
         input_ids = []
+        phonemes = []
         
-        for bid, (input_id) in enumerate(batch):
+        for bid, (data) in enumerate(batch):
             
-            input_ids.extend(input_id['input_ids'])
+            input_ids.extend(data['input_ids'])
+            phonemes.extend(data['phonemes'])
 
-        return input_ids
+        return {"input_ids": input_ids, "phonemes": phonemes}
 
 def build_dataloader(df,
                      validation=False,

@@ -30,7 +30,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class FilePathDataset(torch.utils.data.Dataset):
     def __init__(self, dataset,
                  token_maps="token_maps.pkl",
-                 tokenizer="transfo-xl-wt103",
+                 tokenizer="cl-tohoku/bert-base-japanese-whole-word-masking",
                  word_separator=3039, 
                  token_separator=" ", 
                  token_mask="M", 
@@ -174,3 +174,11 @@ def build_dataloader(df,
                              pin_memory=(device != torch.device("cpu")))
 
     return data_loader
+
+
+if __name__ == '__main__':
+    dataset = load_from_disk(config['data_folder'])
+    train_loader = build_trainloader(dataset, batch_size=2, num_workers=0, dataset_config=config['dataset_params'])
+
+    _, (words, labels, phonemes, input_lengths, masked_indices) = next(enumerate(train_loader))
+    print(words, labels, phonemes, input_lengths, masked_indices)
