@@ -51,7 +51,7 @@ def train():
     albert_base_configuration = AlbertConfig(**config['model_params'])
     
     bert = AlbertModel(albert_base_configuration).to(device)
-    num_vocab = max([m['token'] for m in token_maps.values()]) + 1  # 30922 + 1
+    num_vocab = max([m['token'] for m in token_maps.values()]) + 1  # 30923 + 1
     bert = MultiTaskModel(bert,
                           num_vocab=num_vocab,
                           num_tokens=config['model_params']['vocab_size'],

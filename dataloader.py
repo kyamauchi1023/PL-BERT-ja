@@ -6,14 +6,15 @@ import time
 import random
 import numpy as np
 import random
-
 import string
 import pickle
 
+from datasets import load_from_disk
 import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+import yaml
 
 from text_utils import TextCleaner
 
@@ -177,8 +178,10 @@ def build_dataloader(df,
 
 
 if __name__ == '__main__':
+    config_path = "Configs/config.yml" # you can change it to anything else
+    config = yaml.safe_load(open(config_path))
     dataset = load_from_disk(config['data_folder'])
-    train_loader = build_trainloader(dataset, batch_size=2, num_workers=0, dataset_config=config['dataset_params'])
-
+    train_loader = build_dataloader(dataset, batch_size=1, num_workers=0, dataset_config=config['dataset_params'])
+    print(len(dataset))
     _, (words, labels, phonemes, input_lengths, masked_indices) = next(enumerate(train_loader))
     print(words, labels, phonemes, input_lengths, masked_indices)
