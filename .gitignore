@@ -161,8 +161,8 @@ cython_debug/
 
 wiki_phoneme/
 nohup.out
-Checkpoint/
-logs/
+Checkpoint*/
+logs*/
 
 token_maps.pkl
 token_maps.txt

@@ -32,7 +32,7 @@ class FilePathDataset(torch.utils.data.Dataset):
     def __init__(self, dataset,
                  token_maps="token_maps.pkl",
                  tokenizer="cl-tohoku/bert-base-japanese-whole-word-masking",
-                 word_separator=3039, 
+                 word_separator=3, 
                  token_separator=" ", 
                  token_mask="M", 
                  max_mel_length=512,
@@ -72,8 +72,10 @@ class FilePathDataset(torch.utils.data.Dataset):
             z = list(z)
             
             words.extend([z[1]] * len(z[0]))
-            words.append(self.word_separator)
-            labels += z[0] + " "
+            # words.append(self.word_separator)
+
+            labels += z[0]
+            # labels += self.token_separator
 
             if np.random.rand() < self.word_mask_prob:
                 if np.random.rand() < self.replace_prob:
@@ -87,9 +89,7 @@ class FilePathDataset(torch.utils.data.Dataset):
                 masked_index.extend((np.arange(len(phoneme) - len(z[0]), len(phoneme))).tolist())
             else:
                 phoneme += z[0] 
-
-            phoneme += self.token_separator
-
+            # phoneme += self.token_separator
 
         mel_length = len(phoneme)
         masked_idx = np.array(masked_index)
@@ -183,5 +183,6 @@ if __name__ == '__main__':
     dataset = load_from_disk(config['data_folder'])
     train_loader = build_dataloader(dataset, batch_size=1, num_workers=0, dataset_config=config['dataset_params'])
     print(len(dataset))
+    print(len(train_loader))
     _, (words, labels, phonemes, input_lengths, masked_indices) = next(enumerate(train_loader))
     print(words, labels, phonemes, input_lengths, masked_indices)

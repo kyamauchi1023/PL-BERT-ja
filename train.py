@@ -96,63 +96,69 @@ def train():
 
     running_loss = 0
     
-    for _, batch in enumerate(train_loader):
-        curr_steps += 1
-        
-        words, labels, phonemes, input_lengths, masked_indices = batch
-        text_mask = length_to_mask(torch.Tensor(input_lengths))
-        
-        tokens_pred, words_pred = bert(phonemes, attention_mask=(~text_mask).int().to(device))
-        
-        loss_vocab = 0
-        for _s2s_pred, _text_input, _text_length, _masked_indices in zip(words_pred, words, input_lengths, masked_indices):
-            loss_vocab += criterion(_s2s_pred[:_text_length], 
-                                        _text_input[:_text_length])
-        loss_vocab /= words.size(0)
-        
-        loss_token = 0
-        sizes = 0
-        for _s2s_pred, _text_input, _text_length, _masked_indices in zip(tokens_pred, labels, input_lengths, masked_indices):
-            if len(_masked_indices) > 0:
-                _text_input = _text_input[:_text_length][_masked_indices]
-                loss_tmp = criterion(_s2s_pred[:_text_length][_masked_indices], 
-                                            _text_input[:_text_length]) 
-                loss_token += loss_tmp
-                sizes += 1
-
-        loss_token /= sizes
-
-        loss = loss_vocab + loss_token
-
-        optimizer.zero_grad()
-        accelerator.backward(loss)
-        optimizer.step()
-
-        running_loss += loss.item()
-
-        iters = iters + 1
-        if (iters+1)%log_interval == 0:
-            total_loss = running_loss / log_interval
-            accelerator.print ('Step [%d/%d], Loss: %.5f, Vocab Loss: %.5f, Token Loss: %.5f'
-                    %(iters+1, num_steps, total_loss, loss_vocab, loss_token))
-            train_logger.add_scalar("Total Loss", total_loss, iters+1)
-            train_logger.add_scalar("Vocab Loss", loss_vocab, iters+1)
-            train_logger.add_scalar("Token Loss", loss_token, iters+1)
-            running_loss = 0
+    epoch = 0
+    while True:
+        for _, batch in enumerate(train_loader):
+            curr_steps += 1
             
-        if (iters+1)%save_interval == 0:
-            accelerator.print('Saving..')
+            words, labels, phonemes, input_lengths, masked_indices = batch
+            text_mask = length_to_mask(torch.Tensor(input_lengths))
+            
+            tokens_pred, words_pred = bert(phonemes, attention_mask=(~text_mask).int().to(device))
+            
+            loss_vocab = 0
+            for _s2s_pred, _text_input, _text_length, _masked_indices in zip(words_pred, words, input_lengths, masked_indices):
+                loss_vocab += criterion(_s2s_pred[:_text_length], 
+                                            _text_input[:_text_length])
+            loss_vocab /= words.size(0)
+            
+            loss_token = 0
+            sizes = 0
+            for _s2s_pred, _text_input, _text_length, _masked_indices in zip(tokens_pred, labels, input_lengths, masked_indices):
+                if len(_masked_indices) > 0:
+                    _text_input = _text_input[:_text_length][_masked_indices]
+                    loss_tmp = criterion(_s2s_pred[:_text_length][_masked_indices], 
+                                                _text_input[:_text_length]) 
+                    loss_token += loss_tmp
+                    sizes += 1
 
-            state = {
-                'net':  bert.state_dict(),
-                'step': iters,
-                'optimizer': optimizer.state_dict(),
-            }
+            loss_token /= sizes
 
-            accelerator.save(state, log_dir + '/step_' + str(iters + 1) + '.t7')
+            loss = loss_vocab + loss_token
 
-        if curr_steps > num_steps:
-            return 
+            optimizer.zero_grad()
+            accelerator.backward(loss)
+            optimizer.step()
+
+            running_loss += loss.item()
+
+            iters = iters + 1
+            if (iters+1)%log_interval == 0:
+                total_loss = running_loss / log_interval
+                accelerator.print ('Step [%d/%d], Loss: %.5f, Vocab Loss: %.5f, Token Loss: %.5f'
+                        %(iters+1, num_steps, total_loss, loss_vocab, loss_token))
+                train_logger.add_scalar("Total Loss", total_loss, iters+1)
+                train_logger.add_scalar("Vocab Loss", loss_vocab, iters+1)
+                train_logger.add_scalar("Token Loss", loss_token, iters+1)
+                running_loss = 0
+                
+            if (iters+1)%save_interval == 0:
+                accelerator.print('Saving..')
+
+                state = {
+                    'net':  bert.state_dict(),
+                    'step': iters,
+                    'optimizer': optimizer.state_dict(),
+                }
+
+                accelerator.save(state, log_dir + '/step_' + str(iters + 1) + '.t7')
+
+            if curr_steps > num_steps:
+                print(f"epoch: {epoch}")
+                return
+            
+        epoch += 1
+        print(f"epoch: {epoch}")
 
 
 if __name__ == '__main__':
