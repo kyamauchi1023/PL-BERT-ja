@@ -1,0 +1,10 @@
+path:
+  ckpt_path: "alvpredictor/output/ckpt/osaka"
+  log_path: "alvpredictor/output/log/osaka"
+  result_path: "alvpredictor/output/result/osaka"
+optimizer:
+  batch_size: 16
+  lr: 0.01
+epoch:
+  total_epoch: 200
+  save_epoch: 50

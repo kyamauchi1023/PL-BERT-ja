@@ -1,4 +1,5 @@
 import glob
+import os
 import torch
 
 def scan_checkpoint(cp_dir):

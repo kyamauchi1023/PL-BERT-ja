@@ -1,0 +1,6 @@
+path:
+  data_dir: "/media/yamauchi/2084DFA884DF7EAA/dataset/preprocessed_data/JSUT"
+
+preprocessing:
+  val_size: 512
+  num_class: 2

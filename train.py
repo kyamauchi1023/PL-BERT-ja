@@ -3,9 +3,6 @@ import os.path as osp
 import pickle
 import shutil
 
-from accelerate import Accelerator
-from accelerate import DistributedDataParallelKwargs
-from accelerate.utils import LoggerType
 from datasets import load_from_disk
 import torch
 from torch import nn
@@ -24,9 +21,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def train():
-    
-    ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
-    
     curr_steps = 0
     
     dataset = load_from_disk(config["data_folder"])
@@ -50,61 +44,53 @@ def train():
 
     albert_base_configuration = AlbertConfig(**config['model_params'])
     
-    bert = AlbertModel(albert_base_configuration).to(device)
+    bert_ = AlbertModel(albert_base_configuration).to(device)
     num_vocab = max([m['token'] for m in token_maps.values()]) + 1  # 30923 + 1
-    bert = MultiTaskModel(bert,
+    bert = MultiTaskModel(bert_,
                           num_vocab=num_vocab,
                           num_tokens=config['model_params']['vocab_size'],
                           hidden_size=config['model_params']['hidden_size']).to(device)
+
+    # for param in bert.parameters():
+    #     print(param)
+    # print(bert.state_dict())
+    # return
     
     load = True
     try:
         files = os.listdir(log_dir)
         ckpts = []
-        for f in os.listdir(log_dir):
-            if f.startswith("step_"): ckpts.append(f)
+        for f in files:
+            if f.endswith(".pth.tar"):
+                ckpts.append(f)
 
-        iters = [int(f.split('_')[-1].split('.')[0]) for f in ckpts if os.path.isfile(os.path.join(log_dir, f))]
+        iters = [int(f.split('.')[0]) for f in ckpts if os.path.isfile(os.path.join(log_dir, f))]
         iters = sorted(iters)[-1]
     except:
         iters = 0
         load = False
     
-    optimizer = torch.optim.AdamW(bert.parameters(), lr=1e-4)
-    
-    accelerator = Accelerator(mixed_precision=config['mixed_precision'], split_batches=True, kwargs_handlers=[ddp_kwargs])
+    optimizer = torch.optim.SGD(bert.parameters(), lr=1e-4)
     
     if load:
-        checkpoint = torch.load(log_dir + "/step_" + str(iters) + ".t7", map_location='cpu')
-        state_dict = checkpoint['net']
-        from collections import OrderedDict
-        new_state_dict = OrderedDict()
-        for k, v in state_dict.items():
-            name = k[7:] # remove `module.`
-            new_state_dict[name] = v
-
-        bert.load_state_dict(new_state_dict, strict=False)
-        
-        accelerator.print('Checkpoint loaded.')
+        checkpoint = torch.load(os.path.join(log_dir, "{}.pth.tar".format(iters)))
+        bert.load_state_dict(checkpoint['model'], strict=False)
         optimizer.load_state_dict(checkpoint['optimizer'])
-    
-    bert, optimizer, train_loader = accelerator.prepare(
-        bert, optimizer, train_loader
-    )
 
-    accelerator.print('Start training...')
+    print('Start training...')
+    bert.train()
 
     running_loss = 0
-    
     epoch = 0
     while True:
         for _, batch in enumerate(train_loader):
             curr_steps += 1
             
             words, labels, phonemes, input_lengths, masked_indices = batch
-            text_mask = length_to_mask(torch.Tensor(input_lengths))
+            words, labels, phonemes = words.to(device), labels.to(device), phonemes.to(device)
+            text_mask = length_to_mask(torch.Tensor(input_lengths)).to(device)
             
-            tokens_pred, words_pred = bert(phonemes, attention_mask=(~text_mask).int().to(device))
+            tokens_pred, words_pred = bert(phonemes, attention_mask=(~text_mask).int())
             
             loss_vocab = 0
             for _s2s_pred, _text_input, _text_length, _masked_indices in zip(words_pred, words, input_lengths, masked_indices):
@@ -127,31 +113,29 @@ def train():
             loss = loss_vocab + loss_token
 
             optimizer.zero_grad()
-            accelerator.backward(loss)
+            loss.backward()
             optimizer.step()
 
             running_loss += loss.item()
 
             iters = iters + 1
-            if (iters+1)%log_interval == 0:
+            if (iters+1) % log_interval == 0:
                 total_loss = running_loss / log_interval
-                accelerator.print ('Step [%d/%d], Loss: %.5f, Vocab Loss: %.5f, Token Loss: %.5f'
-                        %(iters+1, num_steps, total_loss, loss_vocab, loss_token))
+                print('Step [%d/%d], Loss: %.5f, Vocab Loss: %.5f, Token Loss: %.5f'%(iters+1, num_steps, total_loss, loss_vocab, loss_token))
                 train_logger.add_scalar("Total Loss", total_loss, iters+1)
                 train_logger.add_scalar("Vocab Loss", loss_vocab, iters+1)
                 train_logger.add_scalar("Token Loss", loss_token, iters+1)
                 running_loss = 0
-                
-            if (iters+1)%save_interval == 0:
-                accelerator.print('Saving..')
-
-                state = {
-                    'net':  bert.state_dict(),
-                    'step': iters,
-                    'optimizer': optimizer.state_dict(),
-                }
-
-                accelerator.save(state, log_dir + '/step_' + str(iters + 1) + '.t7')
+            
+            if (iters+1) % save_interval == 0:
+                torch.save(
+                    {
+                        "model": bert.state_dict(),
+                        "step": iters,
+                        "optimizer": optimizer.state_dict(),
+                    },
+                    os.path.join(log_dir, "{}.pth.tar".format(iters+1)),
+                )
 
             if curr_steps > num_steps:
                 print(f"epoch: {epoch}")
