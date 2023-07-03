@@ -109,6 +109,7 @@ def train():
                     sizes += 1
 
             loss_token /= sizes
+            # loss_token = loss_token * 2
 
             loss = loss_vocab + loss_token
 

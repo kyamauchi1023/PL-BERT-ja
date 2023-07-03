@@ -51,8 +51,24 @@ def main(args, configs):
     )
     
     # load pre-trained weight
-    checkpoint = torch.load(os.path.join(bert_config['log_dir'], "{}.pth.tar".format(args.pretrain_step)))
-    bert.load_state_dict(checkpoint['model'], strict=False)
+    load = True
+    try:
+        files = os.listdir(bert_config['log_dir'])
+        ckpts = []
+        for f in files:
+            if f.endswith(".pth.tar"):
+                ckpts.append(f)
+
+        iters = [int(f.split('.')[0]) for f in ckpts if os.path.isfile(os.path.join(log_dir, f))]
+        iters = sorted(iters)[-1]
+        check_path = os.path.join(bert_config['log_dir'], "{}.pth.tar".format(iters))
+    except:
+        load = False
+    
+    if load:
+        print(f"loading from {check_path} ...")
+        checkpoint = torch.load(check_path)
+        bert.load_state_dict(checkpoint['model'], strict=False)
 
     # get model
     num_class = preprocess_config["preprocessing"]["num_class"]
@@ -173,7 +189,6 @@ def main(args, configs):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--restore_epoch", type=int, default=0)
-    parser.add_argument("--pretrain_step", type=int, default=1000000)
     parser.add_argument(
         "-p",
         "--preprocess_config",

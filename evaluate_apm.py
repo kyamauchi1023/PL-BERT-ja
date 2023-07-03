@@ -30,6 +30,7 @@ def evaluate(model, epoch, configs, logger=None):
 
     # Evaluation
     epoch_loss = 0
+    batch_num = 0
     acc = 0
     num_phoneme = 0
     for batchs in loader:
@@ -47,12 +48,13 @@ def evaluate(model, epoch, configs, logger=None):
             loss = Loss(outputs.masked_select(src_masks).view(-1, num_class).float(), alvs.masked_select(src_masks).long())
             epoch_loss += loss.item()
 
+            batch_num += 1
             preds = outputs.masked_select(src_masks).view(-1, num_class).argmax(dim=-1)
             acc += torch.sum(preds == alvs.masked_select(src_masks))
             num_phoneme += len(preds)
 
 
-    epoch_loss = epoch_loss / len(dataset)
+    epoch_loss = epoch_loss / batch_num
     accuracy = acc / num_phoneme
 
     message = f"Validation Epoch {epoch}, Val Loss: {epoch_loss}, Val Accuracy: {accuracy}"

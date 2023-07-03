@@ -5,7 +5,7 @@ batch_size: 16
 save_interval: 100000
 log_interval: 10
 num_process: 1 # number of GPUs
-num_steps: 1000000
+num_steps: 2000000
 
 dataset_params:
     tokenizer: "cl-tohoku/bert-base-japanese-whole-word-masking"

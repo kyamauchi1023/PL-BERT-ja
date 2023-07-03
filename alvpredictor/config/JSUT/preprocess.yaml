@@ -3,4 +3,4 @@ path:
 
 preprocessing:
   val_size: 512
-  num_class: 2
+  num_class: 4
