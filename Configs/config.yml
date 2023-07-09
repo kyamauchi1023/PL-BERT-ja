@@ -5,7 +5,7 @@ batch_size: 16
 save_interval: 100000
 log_interval: 10
 num_process: 1 # number of GPUs
-num_steps: 2000000
+num_steps: 1000000
 
 dataset_params:
     tokenizer: "cl-tohoku/bert-base-japanese-whole-word-masking"
@@ -13,18 +13,23 @@ dataset_params:
     token_mask: "M" # token used for phoneme mask (M)
     word_separator: 3 # token used for word separator ([SEP])
     token_maps: "token_maps.pkl" # token map path
-    
+
     max_mel_length: 512 # max phoneme length
-    
+
     word_mask_prob: 0.15 # probability to mask the entire word
     phoneme_mask_prob: 0.1 # probability to mask each phoneme
     replace_prob: 0.2 # probablity to replace phonemes
-    
+
 model_params:
-    vocab_size: 378
-    hidden_size: 768
-    num_attention_heads: 12
-    intermediate_size: 2048
+    vocab_size: 379
+    hidden_size: 256
+    num_attention_heads: 2
+    intermediate_size: 1024
     max_position_embeddings: 512
-    num_hidden_layers: 12
-    dropout: 0.1
+    num_hidden_layers: 4
+    dropout: 0.2
+    attention_probs_dropout_prob: 0.2
+    hidden_dropout_prob: 0.2
+    classifier_dropout_prob: 0.2
+    embedding_size: 256
+    layer_norm_eps: 0.00001

@@ -6,5 +6,5 @@ optimizer:
   batch_size: 16
   lr: 0.0001
 epoch:
-  total_epoch: 2000
-  save_epoch: 500
+  total_epoch: 1000
+  save_epoch: 100

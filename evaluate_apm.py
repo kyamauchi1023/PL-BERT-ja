@@ -10,7 +10,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def evaluate(model, epoch, configs, logger=None):
-    preprocess_config, model_config, train_config, bert_config = configs
+    preprocess_config, train_config, bert_config = configs
 
     # Get dataset
     dataset = Dataset(
@@ -57,7 +57,7 @@ def evaluate(model, epoch, configs, logger=None):
     epoch_loss = epoch_loss / batch_num
     accuracy = acc / num_phoneme
 
-    message = f"Validation Epoch {epoch}, Val Loss: {epoch_loss}, Val Accuracy: {accuracy}"
+    message = f"Val Loss: {epoch_loss}, Val Accuracy: {accuracy}"
 
     if logger is not None:
         logger.add_scalar("Val Loss", epoch_loss, epoch)

@@ -22,7 +22,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 def main(args, configs):
     print("Prepare training ...")
 
-    preprocess_config, model_config, train_config, bert_config = configs
+    preprocess_config, train_config, bert_config = configs
 
     # Get dataset
     dataset = Dataset(
@@ -59,7 +59,7 @@ def main(args, configs):
             if f.endswith(".pth.tar"):
                 ckpts.append(f)
 
-        iters = [int(f.split('.')[0]) for f in ckpts if os.path.isfile(os.path.join(log_dir, f))]
+        iters = [int(f.split('.')[0]) for f in ckpts if os.path.isfile(os.path.join(bert_config['log_dir'], f))]
         iters = sorted(iters)[-1]
         check_path = os.path.join(bert_config['log_dir'], "{}.pth.tar".format(iters))
     except:
@@ -68,7 +68,7 @@ def main(args, configs):
     if load:
         print(f"loading from {check_path} ...")
         checkpoint = torch.load(check_path)
-        bert.load_state_dict(checkpoint['model'], strict=False)
+        bert.load_state_dict(checkpoint['model'], strict=True)
 
     # get model
     num_class = preprocess_config["preprocessing"]["num_class"]
@@ -87,13 +87,14 @@ def main(args, configs):
             train_config["path"]["ckpt_path"],
             "{}.pth.tar".format(args.restore_epoch),
         )
+        print(f"loading from {ckpt_path} ...")
         ckpt = torch.load(ckpt_path)
         model.load_state_dict(ckpt["model"])
         optimizer.load_state_dict(ckpt["optimizer"])
 
     # freeze weight
-    # for param in model.encoder.parameters():
-    #     param.require_grad = False
+    for param in model.encoder.parameters():
+        param.require_grad = False
     # print(model)
     # return
 
@@ -115,7 +116,7 @@ def main(args, configs):
     total_epoch = train_config["epoch"]["total_epoch"]
     save_epoch = train_config["epoch"]["save_epoch"]
 
-    inner_bar = tqdm(total=total_epoch, desc="Epoch {}".format(epoch), position=1)
+    inner_bar = tqdm(total=total_epoch, desc="Epoch", position=1)
     while True:
         epoch_loss = 0
         batch_num = 0
@@ -164,11 +165,10 @@ def main(args, configs):
             )
 
         # train loss
-        message1 = "Epoch {}/{}, ".format(epoch, total_epoch)
-        message2 = f"Train Loss: {epoch_loss}, Train Accuracy: {accuracy}"
+        message = f"Train Loss: {epoch_loss}, Train Accuracy: {accuracy}"
         with open(os.path.join(train_log_path, "log.txt"), "a") as f:
-            f.write(message1 + message2 + "\n")
-        inner_bar.write(message1 + message2)
+            f.write("\n" + message + "\n")
+        inner_bar.write(message)
         train_logger.add_scalar("Train Loss", epoch_loss, epoch)
         train_logger.add_scalar("Train Accuracy", accuracy, epoch)
 
@@ -180,7 +180,7 @@ def main(args, configs):
         inner_bar.write(message)
         model.train()
 
-        if epoch == total_epoch:
+        if epoch >= total_epoch:
             quit()
         epoch += 1
         inner_bar.update(1)
@@ -197,9 +197,6 @@ if __name__ == "__main__":
         help="path to preprocess.yaml",
     )
     parser.add_argument(
-        "-m", "--model_config", type=str, required=True, help="path to model.yaml"
-    )
-    parser.add_argument(
         "-t", "--train_config", type=str, required=True, help="path to train.yaml"
     )
     parser.add_argument(
@@ -209,9 +206,8 @@ if __name__ == "__main__":
 
     # Read Config
     preprocess_config = yaml.load(open(args.preprocess_config, "r"), Loader=yaml.FullLoader)
-    model_config = yaml.load(open(args.model_config, "r"), Loader=yaml.FullLoader)
     train_config = yaml.load(open(args.train_config, "r"), Loader=yaml.FullLoader)
     bert_config = yaml.load(open(args.bert_config, "r"), Loader=yaml.FullLoader)
-    configs = (preprocess_config, model_config, train_config, bert_config)
+    configs = (preprocess_config, train_config, bert_config)
 
     main(args, configs)

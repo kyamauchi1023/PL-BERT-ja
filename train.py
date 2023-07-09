@@ -9,7 +9,7 @@ from torch import nn
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 # from transformers import AdamW
-from transformers import AlbertConfig, AlbertModel
+from transformers import BertConfig, BertModel
 from transformers import BertJapaneseTokenizer
 import yaml
 
@@ -42,9 +42,9 @@ def train():
         device=device,
     )
 
-    albert_base_configuration = AlbertConfig(**config['model_params'])
+    bert_base_configuration = BertConfig(**config['model_params'])
     
-    bert_ = AlbertModel(albert_base_configuration).to(device)
+    bert_ = BertModel(bert_base_configuration).to(device)
     num_vocab = max([m['token'] for m in token_maps.values()]) + 1  # 30923 + 1
     bert = MultiTaskModel(bert_,
                           num_vocab=num_vocab,
@@ -70,7 +70,7 @@ def train():
         iters = 0
         load = False
     
-    optimizer = torch.optim.SGD(bert.parameters(), lr=1e-4)
+    optimizer = torch.optim.SGD(bert.parameters(), lr=1e-3)
     
     if load:
         checkpoint = torch.load(os.path.join(log_dir, "{}.pth.tar".format(iters)))

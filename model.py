@@ -3,7 +3,7 @@ from torch import nn
 import torch.nn.functional as F
 
 class MultiTaskModel(nn.Module):
-    def __init__(self, model, num_tokens=178, num_vocab=84827, hidden_size=768):
+    def __init__(self, model, num_tokens, num_vocab, hidden_size):
         super().__init__()
 
         self.encoder = model
