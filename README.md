@@ -1,5 +1,7 @@
 # PL-BERT-ja
-A repository of Japanese Phoneme-Level BERT
+A repository of Japanese [Phoneme-Level BERT](https://arxiv.org/abs/2301.08810)
+
+This repository enables [https://github.com/yl4579/PL-BERT](https://github.com/yl4579/PL-BERT) to be pre-trained with the [Japanese wikipedia corpus](https://dumps.wikimedia.org).
 
 ## Pre-requisites
 1. Python >= 3.7
@@ -18,6 +20,7 @@ pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --e
 ```bash
 python preprocess.py
 ```
+You can kill this task:
 ```bash
 pgrep python | xargs kill -9
 ```
@@ -30,12 +33,10 @@ python train.py
 tensorboard --logdir logs
 ```
 
-## Finetuning
-Please check [this README](alvpredictor/README.md)
-
 
 ## References
 - [NVIDIA/NeMo-text-processing](https://github.com/NVIDIA/NeMo-text-processing)
 - [tomaarsen/TTSTextNormalization](https://github.com/tomaarsen/TTSTextNormalization)
 - [https://arxiv.org/abs/2301.08810](https://arxiv.org/abs/2301.08810)
 - [https://github.com/yl4579/PL-BERT](https://github.com/yl4579/PL-BERT)
+- [Japanese wikipedia corpus](https://dumps.wikimedia.org)

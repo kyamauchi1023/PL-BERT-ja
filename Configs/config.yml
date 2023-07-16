@@ -1,8 +1,8 @@
 log_dir: "Checkpoint"
 mixed_precision: "fp16"
-data_folder: "/media/yamauchi/2084DFA884DF7EAA/dataset/wikipedia-ja/processed_data"
+data_folder: "./dataset/wikipedia-ja/processed_data"
 batch_size: 16
-save_interval: 400000
+save_interval: 200000
 log_interval: 10
 num_process: 1 # number of GPUs
 num_steps: 10000000

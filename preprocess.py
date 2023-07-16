@@ -43,10 +43,10 @@ if __name__ == '__main__':
     ##### download dataset #####
     # comment out the following line in hogehoge/datasets/wikipedia/wikipedia.py
     # | "Distribute" >> beam.transforms.Reshuffle()
-    datasets.config.DOWNLOADED_DATASETS_PATH = pathlib.Path("/media/yamauchi/2084DFA884DF7EAA/dataset/wikipedia-ja")
+    datasets.config.DOWNLOADED_DATASETS_PATH = pathlib.Path("./dataset/wikipedia-ja")
     dataset = datasets.load_dataset(
         'wikipedia', language="ja", date="20230601", beam_runner="DirectRunner",
-        cache_dir="/media/yamauchi/2084DFA884DF7EAA/dataset/wikipedia-ja/.cache"
+        cache_dir="./dataset/wikipedia-ja/.cache"
     )
     dataset = dataset['train']
 
