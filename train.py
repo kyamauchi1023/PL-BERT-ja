@@ -46,15 +46,12 @@ def train():
     
     bert_ = BertModel(bert_base_configuration).to(device)
     num_vocab = max([m['token'] for m in token_maps.values()]) + 1  # 30923 + 1
-    bert = MultiTaskModel(bert_,
-                          num_vocab=num_vocab,
-                          num_tokens=config['model_params']['vocab_size'],
-                          hidden_size=config['model_params']['hidden_size']).to(device)
-
-    # for param in bert.parameters():
-    #     print(param)
-    # print(bert.state_dict())
-    # return
+    bert = MultiTaskModel(
+        bert_,
+        num_vocab=num_vocab,
+        num_tokens=config['model_params']['vocab_size'],
+        hidden_size=config['model_params']['hidden_size']
+    ).to(device)
     
     load = True
     try:
@@ -107,9 +104,7 @@ def train():
                                                 _text_input[:_text_length]) 
                     loss_token += loss_tmp
                     sizes += 1
-
             loss_token /= sizes
-            # loss_token = loss_token * 2
 
             loss = loss_vocab + loss_token
 

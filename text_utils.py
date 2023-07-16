@@ -39,7 +39,7 @@ class TextCleaner:
 
 
 if __name__ == '__main__':
-    print(pyopenjtalk.g2p("こんにちは、はじめまして。"))
+    print(pyopenjtalk.g2p("こんにちは。"))
     print(symbols)
     cleaner = TextCleaner()
     

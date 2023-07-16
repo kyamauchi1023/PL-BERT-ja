@@ -2,10 +2,10 @@ log_dir: "Checkpoint"
 mixed_precision: "fp16"
 data_folder: "/media/yamauchi/2084DFA884DF7EAA/dataset/wikipedia-ja/processed_data"
 batch_size: 16
-save_interval: 100000
+save_interval: 400000
 log_interval: 10
 num_process: 1 # number of GPUs
-num_steps: 1000000
+num_steps: 10000000
 
 dataset_params:
     tokenizer: "cl-tohoku/bert-base-japanese-whole-word-masking"
