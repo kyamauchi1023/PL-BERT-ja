@@ -1,8 +1,8 @@
 log_dir: "Checkpoint"
 mixed_precision: "fp16"
 data_folder: "./dataset/wikipedia-ja/processed_data"
-batch_size: 16
-save_interval: 200000
+batch_size: 8
+save_interval: 500000
 log_interval: 10
 num_process: 1 # number of GPUs
 num_steps: 10000000
@@ -22,14 +22,9 @@ dataset_params:
 
 model_params:
     vocab_size: 379
-    hidden_size: 256
-    num_attention_heads: 2
-    intermediate_size: 1024
+    hidden_size: 768
+    num_attention_heads: 12
+    intermediate_size: 2048
     max_position_embeddings: 512
-    num_hidden_layers: 4
-    dropout: 0.2
-    attention_probs_dropout_prob: 0.2
-    hidden_dropout_prob: 0.2
-    classifier_dropout_prob: 0.2
-    embedding_size: 256
-    layer_norm_eps: 0.00001
+    num_hidden_layers: 12
+    dropout: 0.1

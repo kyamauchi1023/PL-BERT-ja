@@ -8,8 +8,8 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
-# from transformers import AdamW
-from transformers import BertConfig, BertModel
+# from transformers import BertConfig, BertModel
+from transformers import AlbertConfig, AlbertModel
 from transformers import BertJapaneseTokenizer
 import yaml
 
@@ -42,9 +42,8 @@ def train():
         device=device,
     )
 
-    bert_base_configuration = BertConfig(**config['model_params'])
-    
-    bert_ = BertModel(bert_base_configuration).to(device)
+    albert_base_configuration = AlbertConfig(**config['model_params'])
+    bert_ = AlbertModel(albert_base_configuration).to(device)
     num_vocab = max([m['token'] for m in token_maps.values()]) + 1  # 30923 + 1
     bert = MultiTaskModel(
         bert_,
@@ -67,7 +66,7 @@ def train():
         iters = 0
         load = False
     
-    optimizer = torch.optim.SGD(bert.parameters(), lr=1e-3)
+    optimizer = torch.optim.AdamW(bert.parameters(), lr=4e-6)
     
     if load:
         checkpoint = torch.load(os.path.join(log_dir, "{}.pth.tar".format(iters)))
@@ -150,7 +149,7 @@ if __name__ == '__main__':
 
     tokenizer = BertJapaneseTokenizer.from_pretrained(config['dataset_params']['tokenizer'])
 
-    criterion = nn.CrossEntropyLoss().to(device) # F0 loss (regression)
+    criterion = nn.CrossEntropyLoss().to(device)
 
     best_loss = float('inf')  # best test loss
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch

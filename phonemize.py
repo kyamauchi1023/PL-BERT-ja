@@ -5,6 +5,8 @@ import unicodedata
 
 from convert_label import openjtalk2julius
 
+
+# 実装上の問題から2文字の音素を1文字の適当な記号にマッピング
 _japanese = ['ky','sp', 'sh', 'ch', 'ts','ty', 'ry', 'ny', 'by', 'hy', 'gy', 'kw', 'gw', 'kj', 'gj', 'my', 'py','dy']
 japanese = ['$', '%', '&', '「', '」', '=', '~', '^', '|', '[', ']', '{', '}', '*', '+', '#', '<', '>']
 _japanese2japanese = {
