@@ -20,10 +20,6 @@ pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --e
 ```bash
 python preprocess.py
 ```
-You can kill this task:
-```bash
-pgrep python | xargs kill -9
-```
 
 ## Trianing
 ```bash
@@ -32,6 +28,9 @@ python train.py
 ```
 tensorboard --logdir logs
 ```
+
+## Pre-trained model
+Pre-trained model weights are available from [plb-ja_10000000-steps](https://drive.google.com/file/d/1O3nnjQuZMJP81752abVA6onDlfYALGg2/view?usp=sharing).
 
 
 ## References
