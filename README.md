@@ -30,7 +30,13 @@ tensorboard --logdir logs
 ```
 
 ## Pre-trained model
-Pre-trained model weights are available from [plb-ja_10000000-steps](https://drive.google.com/file/d/1O3nnjQuZMJP81752abVA6onDlfYALGg2/view?usp=sharing).
+Pre-trained model weights are available from [plb-ja_10000000-steps](https://drive.google.com/file/d/1TRazSiBGs1NnBvPLe1V96MUb5gTs2IcO/view?usp=sharing).
+
+The downloaded zip file contains the following files:
+- `10000000.pth.tar`: 10000000 steps pre-trained weights
+- `config.yml`: contains the config used for pre-training
+- `token_maps.pkl`: a list of the correspondence between the tokens and the ids created by the pre-processing
+- `token_maps.txt`: `token_maps.pkl` made into a text file
 
 
 ## References
